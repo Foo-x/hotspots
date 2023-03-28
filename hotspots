@@ -81,13 +81,11 @@ def main():
 
     result = [(score, loc, file) for score, loc, file in result if loc > 0]
 
+    min_score = min(score for score, _, _ in result)
+    max_score = max(score for score, _, _ in result)
     result = [
         (
-            normalize_score(
-                score,
-                min(score for score, _, _ in result),
-                max(score for score, _, _ in result),
-            ),
+            normalize_score(score, min_score, max_score),
             loc,
             file,
         )
