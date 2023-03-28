@@ -6,6 +6,7 @@ import datetime as dt
 from typing import List, Tuple
 
 digits = 4
+delimiter = " "
 
 
 def is_cwd_git_dir() -> bool:
@@ -96,9 +97,15 @@ def main():
 
     max_score_length = max(len(f"{score:.{digits}f}") for score, _, _ in result)
     max_loc_length = max(len(str(loc)) for _, loc, _ in result)
-    print(f"{'score':>{max_score_length}} - {'loc':>{max_loc_length}} - filename")
+    print(
+        delimiter.join(
+            [f"{'score':>{max_score_length}}", f"{'loc':>{max_loc_length}}", "filename"]
+        )
+    )
     for score, loc, file in result:
-        print(f"{score:>.{digits}f}", "-", f"{loc:>{max_loc_length}}", "-", file)
+        print(
+            delimiter.join([f"{score:>.{digits}f}", f"{loc:>{max_loc_length}}", file])
+        )
 
 
 main()
