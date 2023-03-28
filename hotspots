@@ -74,12 +74,15 @@ def main():
 
     today: dt.date = dt.date.today()
 
+    files_with_loc = [(file, lines(file)) for file in ls_files()]
+
     result: List[Tuple[float, int, str]] = [
-        (calc_hotspot_score_for_file(file, today), lines(file), file)
-        for file in ls_files()
+        (calc_hotspot_score_for_file(file, today), loc, file)
+        for file, loc in files_with_loc
+        if loc > 0
     ]
 
-    result = [(score, loc, file) for score, loc, file in result if loc > 0]
+    result = [(score, loc, file) for score, loc, file in result]
 
     min_score = min(score for score, _, _ in result)
     max_score = max(score for score, _, _ in result)
