@@ -5,6 +5,8 @@ import math
 import datetime as dt
 from typing import List, Tuple
 
+digits = 4
+
 
 def is_cwd_git_dir() -> bool:
     return (
@@ -21,6 +23,14 @@ def ls_files() -> List[str]:
     return subprocess.run(
         ["git", "ls-files"], capture_output=True, text=True
     ).stdout.splitlines()
+
+
+def lines(file: str) -> int:
+    try:
+        with open(file) as f:
+            return sum(1 for _ in f)
+    except:
+        return 0
 
 
 def commit_dates(file: str) -> List[dt.date]:
@@ -55,7 +65,7 @@ def calc_hotspot_score_for_file(file: str, today: dt.date) -> float:
 
 
 def normalize_score(score: float, min: float, max: float) -> float:
-    return (score - min) / (max - min) if (max - min) != 0 else 1
+    return round((score - min) / (max - min), digits) if (max - min) != 0 else 1
 
 
 def main():
@@ -64,19 +74,31 @@ def main():
 
     today: dt.date = dt.date.today()
 
-    result: List[Tuple[str, float]] = [
-        (file, calc_hotspot_score_for_file(file, today)) for file in ls_files()
+    result: List[Tuple[float, int, str]] = [
+        (calc_hotspot_score_for_file(file, today), lines(file), file)
+        for file in ls_files()
+    ]
+
+    result = [
+        (
+            normalize_score(
+                score,
+                min(score for score, _, _ in result),
+                max(score for score, _, _ in result),
+            ),
+            loc,
+            file,
+        )
+        for score, loc, file in result
     ]
     result.sort(key=lambda x: x[1], reverse=True)
+    result.sort(key=lambda x: x[0], reverse=True)
 
-    min_score = result[-1][1]
-    max_score = result[0][1]
-    result = [
-        (file, normalize_score(score, min_score, max_score)) for file, score in result
-    ]
-
-    for file, score in result:
-        print(f"{score:.4f}", " - ", file)
+    max_score_length = max(len(f"{score:.{digits}f}") for score, _, _ in result)
+    max_loc_length = max(len(str(loc)) for _, loc, _ in result)
+    print(f"{'score':>{max_score_length}} - {'loc':>{max_loc_length}} - filename")
+    for score, loc, file in result:
+        print(f"{score:>.{digits}f}", "-", f"{loc:>{max_loc_length}}", "-", file)
 
 
 main()
