@@ -14,7 +14,6 @@ def is_cwd_git_dir() -> bool:
         subprocess.run(
             ["git", "rev-parse", "--is-inside-work-tree"],
             capture_output=True,
-            text=True,
         ).returncode
         == 0
     )
@@ -31,7 +30,7 @@ def lines(file: str) -> int:
         with open(file) as f:
             return sum(1 for _ in f)
     except:
-        return 0
+        return -1
 
 
 def commit_dates(file: str) -> List[dt.date]:
@@ -79,6 +78,8 @@ def main():
         (calc_hotspot_score_for_file(file, today), lines(file), file)
         for file in ls_files()
     ]
+
+    result = [(score, loc, file) for score, loc, file in result if loc > 0]
 
     result = [
         (
