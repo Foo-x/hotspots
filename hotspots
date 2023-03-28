@@ -33,7 +33,7 @@ def lines(file: str) -> int:
         return -1
 
 
-def commit_dates(file: str) -> List[dt.date]:
+def ls_commit_dates(file: str) -> List[dt.date]:
     return [
         dt.date.fromisoformat(date.replace("'", ""))
         for date in subprocess.run(
@@ -56,7 +56,7 @@ def calc_hotspot_score(normalized_timestamps: List[float]) -> float:
 
 
 def calc_hotspot_score_for_file(file: str, today: dt.date) -> float:
-    dates = commit_dates(file)
+    dates = ls_commit_dates(file)
     first_date = dates[-1]
     normalized_timestamps = [
         normalize_timestamp(date, first_date, today) for date in dates
