@@ -96,13 +96,13 @@ def normalize_score(score: float, min: float, max: float) -> float:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--include",
         "-I",
+        "--include",
         help="include only files that match glob pattern",
         metavar="GLOB",
     )
     parser.add_argument(
-        "--exclude", "-E", help="exclude files that match glob pattern", metavar="GLOB"
+        "-E", "--exclude", help="exclude files that match glob pattern", metavar="GLOB"
     )
     return parser.parse_args()
 
