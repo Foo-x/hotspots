@@ -20,5 +20,14 @@ Place `hotspots` to PATH.
 ## Usage
 
 ```sh
+# all files under current directory
 hotspots
+
+# include
+hotspots --include 'src/*'
+
+# exclude
+hotspots --exclude '*.md'
 ```
+
+Run `hotspots -h` to show help.
