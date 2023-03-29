@@ -3,7 +3,15 @@
 The Python implementation of Google's bug prediction algorithm.  
 [Bug Prediction at Google | Google Engineering Tools](http://google-engtools.blogspot.com/2011/12/bug-prediction-at-google.html)
 
-There is a difference that the original algorithm uses only bug fix commits, whereas this tool uses all commits.
+There are differences between the original algorithm and this tool.
+
+- Original
+    - uses only bug fix commits
+    - does not normalize scores
+- This tool
+    - uses all commits
+    - normalize scores
+        - highest score will be always 1
 
 
 ## Requirements
