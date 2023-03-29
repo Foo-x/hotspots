@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
+import argparse
 import subprocess
 import math
 import datetime as dt
-from typing import List, Tuple
+import fnmatch as fm
+from typing import List, Tuple, Optional, cast
 
 digits = 4
 delimiter = " "
@@ -23,6 +25,29 @@ def ls_files() -> List[str]:
     return subprocess.run(
         ["git", "ls-files"], capture_output=True, text=True
     ).stdout.splitlines()
+
+
+def filter_files(
+    files: List[str],
+    include_pattern: Optional[str] = None,
+    exclude_pattern: Optional[str] = None,
+) -> List[str]:
+    if include_pattern is None and exclude_pattern is None:
+        return files
+
+    if include_pattern is None:
+        return [
+            file for file in files if not fm.fnmatch(file, cast(str, exclude_pattern))
+        ]
+
+    if exclude_pattern is None:
+        return fm.filter(files, include_pattern)
+
+    return [
+        file
+        for file in fm.filter(files, include_pattern)
+        if not fm.fnmatch(file, exclude_pattern)
+    ]
 
 
 def lines(file: str) -> int:
@@ -68,21 +93,39 @@ def normalize_score(score: float, min: float, max: float) -> float:
     return round((score - min) / (max - min), digits) if (max - min) != 0 else 1
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--include",
+        "-I",
+        help="include only files that match glob pattern",
+        metavar="GLOB",
+    )
+    parser.add_argument(
+        "--exclude", "-E", help="exclude files that match glob pattern", metavar="GLOB"
+    )
+    return parser.parse_args()
+
+
 def main():
     if not is_cwd_git_dir():
         return
 
+    args = parse_args()
+
     today: dt.date = dt.date.today()
 
-    files_with_loc = [(file, lines(file)) for file in ls_files()]
+    files = filter_files(ls_files(), args.include, args.exclude)
+    files_with_loc = [(file, lines(file)) for file in files]
 
     result: List[Tuple[float, int, str]] = [
         (calc_hotspot_score_for_file(file, today), loc, file)
         for file, loc in files_with_loc
         if loc > 0
     ]
-
     result = [(score, loc, file) for score, loc, file in result]
+    if len(result) == 0:
+        return
 
     min_score = min(score for score, _, _ in result)
     max_score = max(score for score, _, _ in result)
