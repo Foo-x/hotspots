@@ -185,4 +185,7 @@ def main():
         )
 
 
-main()
+try:
+    main()
+except KeyboardInterrupt:
+    exit()
