@@ -9,7 +9,8 @@ There are differences between the original algorithm and this tool.
     - uses only bug fix commits
     - does not normalize scores
 - This tool
-    - uses all commits
+    - uses all commits by default
+        - you can filter by option, see usage
     - normalize scores
         - highest score will be always 1
 
@@ -33,6 +34,9 @@ hotspots
 
 # include/exclude
 hotspots --include 'src/*' 'tests/*' --exclude '*.md' '*.svg'
+
+# filter by commit message
+hotspots --filter 'fix|bug'
 ```
 
 Run `hotspots -h` to show help.

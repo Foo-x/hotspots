@@ -5,7 +5,8 @@ import subprocess
 import math
 import datetime as dt
 import fnmatch as fm
-from typing import List, Tuple, cast
+import re
+from typing import List, Tuple, cast, Optional, Pattern
 
 digits = 4
 delimiter = " "
@@ -77,11 +78,13 @@ def lines(file: str) -> int:
         return -1
 
 
-def ls_commit_dates(file: str) -> List[dt.date]:
+def ls_commits(file: str) -> List[Tuple[dt.date, str]]:
     return [
-        dt.date.fromisoformat(date.replace("'", ""))
-        for date in subprocess.run(
-            ["git", "log", "--format='%as'", "--", file], capture_output=True, text=True
+        (dt.date.fromisoformat(commit[1:11]), commit[11:-1])
+        for commit in subprocess.run(
+            ["git", "log", "--format='%as%s'", "--", file],
+            capture_output=True,
+            text=True,
         ).stdout.splitlines()
     ]
 
@@ -99,11 +102,20 @@ def calc_hotspot_score(normalized_timestamps: List[float]) -> float:
     )
 
 
-def calc_hotspot_score_for_file(file: str, today: dt.date) -> float:
-    dates = ls_commit_dates(file)
-    first_date = dates[-1]
+def calc_hotspot_score_for_file(
+    file: str, today: dt.date, filter_pattern: Optional[Pattern[str]]
+) -> float:
+    commits = [
+        (date, message)
+        for date, message in ls_commits(file)
+        if filter_pattern is None or filter_pattern.search(message)
+    ]
+    if len(commits) == 0:
+        return -1
+
+    first_date = commits[-1][0]
     normalized_timestamps = [
-        normalize_timestamp(date, first_date, today) for date in dates
+        normalize_timestamp(date, first_date, today) for date, _ in commits
     ]
     return calc_hotspot_score(normalized_timestamps)
 
@@ -132,6 +144,12 @@ def parse_args():
         help="exclude files that match glob pattern",
         metavar="GLOB",
     )
+    parser.add_argument(
+        "-F",
+        "--filter",
+        help="filter commits by message that match regular expression",
+        metavar="REGEXP",
+    )
     return parser.parse_args()
 
 
@@ -150,12 +168,13 @@ def main():
     )
     files_with_loc = [(file, lines(file)) for file in files]
 
+    filter_pattern = re.compile(args.filter) if args.filter else None
     result: List[Tuple[float, int, str]] = [
-        (calc_hotspot_score_for_file(file, today), loc, file)
+        (calc_hotspot_score_for_file(file, today, filter_pattern), loc, file)
         for file, loc in files_with_loc
         if loc > 0
     ]
-    result = [(score, loc, file) for score, loc, file in result]
+    result = [(score, loc, file) for score, loc, file in result if score != -1]
     if len(result) == 0:
         return
 
