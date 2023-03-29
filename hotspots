@@ -5,7 +5,7 @@ import subprocess
 import math
 import datetime as dt
 import fnmatch as fm
-from typing import List, Tuple, Optional, cast
+from typing import List, Tuple, cast
 
 digits = 4
 delimiter = " "
@@ -29,25 +29,44 @@ def ls_files() -> List[str]:
 
 def filter_files(
     files: List[str],
-    include_pattern: Optional[str] = None,
-    exclude_pattern: Optional[str] = None,
+    include_patterns: List[str],
+    exclude_patterns: List[str],
 ) -> List[str]:
-    if include_pattern is None and exclude_pattern is None:
-        return files
-
-    if include_pattern is None:
+    if include_patterns and exclude_patterns:
         return [
-            file for file in files if not fm.fnmatch(file, cast(str, exclude_pattern))
+            file
+            for file in files
+            if any(
+                fm.fnmatch(file, include_pattern)
+                for include_pattern in include_patterns
+            )
+            and not any(
+                fm.fnmatch(file, exclude_pattern)
+                for exclude_pattern in exclude_patterns
+            )
         ]
 
-    if exclude_pattern is None:
-        return fm.filter(files, include_pattern)
+    if include_patterns:
+        return [
+            file
+            for file in files
+            if any(
+                fm.fnmatch(file, include_pattern)
+                for include_pattern in include_patterns
+            )
+        ]
 
-    return [
-        file
-        for file in fm.filter(files, include_pattern)
-        if not fm.fnmatch(file, exclude_pattern)
-    ]
+    if exclude_patterns:
+        return [
+            file
+            for file in files
+            if not any(
+                fm.fnmatch(file, exclude_pattern)
+                for exclude_pattern in exclude_patterns
+            )
+        ]
+
+    return files
 
 
 def lines(file: str) -> int:
@@ -98,11 +117,20 @@ def parse_args():
     parser.add_argument(
         "-I",
         "--include",
+        nargs="+",
+        action="append",
+        default=[],
         help="include only files that match glob pattern",
         metavar="GLOB",
     )
     parser.add_argument(
-        "-E", "--exclude", help="exclude files that match glob pattern", metavar="GLOB"
+        "-E",
+        "--exclude",
+        nargs="+",
+        action="append",
+        default=[],
+        help="exclude files that match glob pattern",
+        metavar="GLOB",
     )
     return parser.parse_args()
 
@@ -115,7 +143,11 @@ def main():
 
     today: dt.date = dt.date.today()
 
-    files = filter_files(ls_files(), args.include, args.exclude)
+    files = filter_files(
+        ls_files(),
+        sum(cast(List[List[str]], args.include), []),
+        sum(cast(List[List[str]], args.exclude), []),
+    )
     files_with_loc = [(file, lines(file)) for file in files]
 
     result: List[Tuple[float, int, str]] = [

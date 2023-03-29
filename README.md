@@ -23,11 +23,8 @@ Place `hotspots` to PATH.
 # all files under current directory
 hotspots
 
-# include
-hotspots --include 'src/*'
-
-# exclude
-hotspots --exclude '*.md'
+# include/exclude
+hotspots --include 'src/*' 'tests/*' --exclude '*.md' '*.svg'
 ```
 
 Run `hotspots -h` to show help.
