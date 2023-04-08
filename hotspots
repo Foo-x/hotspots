@@ -127,7 +127,7 @@ def normalize_score(score: float, min: float, max: float) -> float:
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-I",
+        "-i",
         "--include",
         nargs="+",
         action="append",
@@ -136,7 +136,7 @@ def parse_args():
         metavar="GLOB",
     )
     parser.add_argument(
-        "-E",
+        "-e",
         "--exclude",
         nargs="+",
         action="append",
@@ -145,7 +145,7 @@ def parse_args():
         metavar="GLOB",
     )
     parser.add_argument(
-        "-F",
+        "-f",
         "--filter",
         help="filter commits by message that match regular expression",
         metavar="REGEXP",
