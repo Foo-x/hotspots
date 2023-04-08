@@ -13,6 +13,7 @@ There are differences between the original algorithm and this tool.
         - you can filter by option, see usage
     - normalize scores
         - highest score will be always 1
+        - can be optionally disabled
 
 
 ## Requirements

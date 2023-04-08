@@ -150,6 +150,9 @@ def parse_args():
         help="filter commits by message that match regular expression",
         metavar="REGEXP",
     )
+    parser.add_argument(
+        "--disable-norm", action="store_true", help="disable score normalization"
+    )
     return parser.parse_args()
 
 
@@ -158,6 +161,7 @@ def main():
         return
 
     args = parse_args()
+    print(args)
 
     today: dt.date = dt.date.today()
 
@@ -180,14 +184,15 @@ def main():
 
     min_score = min(score for score, _, _ in result)
     max_score = max(score for score, _, _ in result)
-    result = [
-        (
-            normalize_score(score, min_score, max_score),
-            loc,
-            file,
-        )
-        for score, loc, file in result
-    ]
+    if not args.disable_norm:
+        result = [
+            (
+                normalize_score(score, min_score, max_score),
+                loc,
+                file,
+            )
+            for score, loc, file in result
+        ]
     result.sort(key=lambda x: x[1], reverse=True)
     result.sort(key=lambda x: x[0], reverse=True)
 
