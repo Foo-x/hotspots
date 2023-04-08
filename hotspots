@@ -161,7 +161,6 @@ def main():
         return
 
     args = parse_args()
-    print(args)
 
     today: dt.date = dt.date.today()
 
